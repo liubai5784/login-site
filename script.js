@@ -4,8 +4,8 @@ async function register(){
 
   console.log("点击注册");
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const u = document.getElementById("loginBtn").onclick = login;
+  const p = document.getElementById("registerBtn").onclick = register;
 
   if(!u || !p){
     alert("用户名和密码不能为空");
@@ -35,8 +35,8 @@ async function register(){
 
 async function login(){
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const u = document.getElementById("loginBtn").onclick = login;
+  const p = document.getElementById("registerBtn").onclick = register;
 
   if(!u || !p){
     alert("用户名和密码不能为空");
