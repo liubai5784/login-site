@@ -21,7 +21,7 @@ async function register(){
     alert("注册成功");
   } else {
     alert(data.msg || "注册失败");
-  }
+}
 
 async function login(){
 
