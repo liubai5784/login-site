@@ -58,7 +58,6 @@ async function login(){
       localStorage.setItem("user", data.user);
 
       alert("登录成功");
-    }
     } else {
       alert("登录失败");
     }
