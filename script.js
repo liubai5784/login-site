@@ -17,8 +17,11 @@ async function register(){
   });
 
   const data = await res.json();
-  alert(data.ok ? "注册成功" : "失败");
-}
+  if(data.ok){
+    alert("注册成功");
+  } else {
+    alert(data.msg || "注册失败");
+  }
 
 async function login(){
 
