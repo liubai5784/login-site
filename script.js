@@ -16,11 +16,10 @@ async function register(){
     body: JSON.stringify({ user:u, pass:p })
   });
 
-  const data = await res.json();
   if(data.ok){
-    alert("注册成功");
-  } else {
-    alert(data.msg || "注册失败");
+  alert("注册成功");
+} else {
+  alert(data.msg || "注册失败");
 }
 
 async function login(){
