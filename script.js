@@ -65,3 +65,21 @@ async function login(){
     alert("请求失败");
   }
 }
+window.onload = async () => {
+
+  const token = localStorage.getItem("token");
+
+  if(!token) return;
+
+  const res = await fetch(API + "/me", {
+    headers: { "Authorization": token }
+  });
+
+  const data = await res.json();
+
+  if(data.ok){
+    document.body.innerHTML = "欢迎回来：" + data.user;
+  } else {
+    localStorage.removeItem("token");
+  }
+}
