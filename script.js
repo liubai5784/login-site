@@ -1,29 +1,29 @@
-async function register() {
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
+const API = "https://ceshi03.2750018830.workers.dev";
 
-  await fetch("/api/register", {
-    method: "POST",
-    body: JSON.stringify({ user, pass })
-  });
-
-  document.getElementById("msg").innerText = "注册成功";
-}
-
-async function login() {
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
-
-  const res = await fetch("/api/login", {
-    method: "POST",
-    body: JSON.stringify({ user, pass })
+async function register(){
+  const res = await fetch(API + "/register", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      user: document.getElementById("user").value,
+      pass: document.getElementById("pass").value
+    })
   });
 
   const data = await res.json();
+  alert(data.ok ? "注册成功" : "失败");
+}
 
-  if (data.ok) {
-    document.getElementById("msg").innerText = "登录成功";
-  } else {
-    document.getElementById("msg").innerText = "失败";
-  }
+async function login(){
+  const res = await fetch(API + "/login", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      user: document.getElementById("user").value,
+      pass: document.getElementById("pass").value
+    })
+  });
+
+  const data = await res.json();
+  alert(data.ok ? "登录成功" : "失败");
 }
