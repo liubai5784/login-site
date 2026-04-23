@@ -54,11 +54,11 @@ async function login(){
 
     if(data.ok){
 
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("user", data.user);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", data.user);
 
-  alert("登录成功");
-}
+      alert("登录成功");
+    }
     } else {
       alert("登录失败");
     }
