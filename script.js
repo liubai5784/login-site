@@ -53,9 +53,12 @@ async function login(){
     const data = await res.json();
 
     if(data.ok){
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", data.user);
-      alert("登录成功");
+
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("user", data.user);
+
+  alert("登录成功");
+}
     } else {
       alert("登录失败");
     }
