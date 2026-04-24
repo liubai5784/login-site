@@ -1,19 +1,23 @@
 
 const API = "https://ceshi03.2750018830.workers.dev";
 
-function togglePwd(){
-
-  const input = document.getElementById("p");
-
-  if(input.type === "password"){
-    input.type = "text";
-  }else{
-    input.type = "password";
-  }
-}
 // ================= 注册 =================
 async function register(){
 
+  function togglePwd(){
+
+  const input = document.getElementById("p");
+  const btn = document.getElementById("eyeBtn");
+
+  if(input.type === "password"){
+    input.type = "text";
+    btn.innerText = "隐藏";
+  }else{
+    input.type = "password";
+    btn.innerText = "显示";
+  }
+}
+  
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
 
