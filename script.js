@@ -72,6 +72,24 @@ async function login(){
   }
 }
 
+function route(user){
+
+  // 先全部隐藏（关键！！）
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("userApp").classList.add("hidden");
+  document.getElementById("adminApp").classList.add("hidden");
+
+  if(user === "admin"){
+    document.getElementById("adminApp").classList.remove("hidden");
+    loadUsers();
+  }else{
+    document.getElementById("userApp").classList.remove("hidden");
+    document.getElementById("uName").innerText = user;
+    document.getElementById("uAvatar").src =
+      "https://api.dicebear.com/7.x/identicon/svg?seed=" + user;
+  }
+}
+
 // 自动登录
 window.onload = async () => {
 
