@@ -206,8 +206,35 @@ async function loadUsers(){
   `).join("");
 }
 
-function register(){
-  alert("调用注册接口即可（可自行补全）");
+async function register(){
+
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
+
+  if(!user || !pass){
+    document.getElementById("msg").innerText = "用户名或密码不能为空";
+    return;
+  }
+
+  try{
+    const res = await fetch(API + "/register", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ user, pass })
+    });
+
+    const data = await res.json();
+
+    if(data.ok){
+      document.getElementById("msg").innerText = "注册成功，可以登录";
+    }else{
+      document.getElementById("msg").innerText = data.msg || "注册失败";
+    }
+
+  }catch(e){
+    console.log(e);
+    document.getElementById("msg").innerText = "网络错误";
+  }
 }
 
 function logout(){
