@@ -3,19 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>管理后台</title>
+<title>后台管理系统</title>
 
 <style>
 body{
   margin:0;
-  font-family: Arial;
+  font-family:Arial;
   background:#0f172a;
   color:#e2e8f0;
 }
 
 .header{
-  padding:20px;
+  padding:16px;
   background:#111827;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.logout{
+  background:#ef4444;
+  color:white;
 }
 
 .container{
@@ -24,21 +39,31 @@ body{
 
 .card{
   background:#111827;
-  padding:16px;
+  padding:14px;
   margin-bottom:12px;
   border-radius:12px;
-}
-
-.user{
   display:flex;
   gap:12px;
-  align-items:center;
+  align-items:flex-start;
 }
 
-img{
+.avatar{
   width:50px;
   height:50px;
   border-radius:50%;
+}
+
+.info{
+  flex:1;
+}
+
+.username{
+  font-weight:bold;
+}
+
+.small{
+  font-size:13px;
+  color:#94a3b8;
 }
 </style>
 </head>
@@ -46,52 +71,65 @@ img{
 <body>
 
 <div class="header">
-  <h2>管理员后台</h2>
+  <h3>后台管理系统</h3>
+  <button class="logout" onclick="logout()">退出登录</button>
 </div>
 
 <div class="container" id="list">
-加载中...
+  正在加载...
 </div>
 
 <script>
 const API = "/api";
-
-// ❗简单权限检查（前端只做提示，真正权限在后端）
 const token = localStorage.getItem("token");
+const user = localStorage.getItem("user");
 
-if(!token){
+// ================= 权限校验 =================
+if(!token || user !== "admin"){
   location.href = "/";
 }
 
+// ================= 加载用户列表 =================
 async function load(){
 
-  const res = await fetch(API + "/admin/users", {
-    headers: { Authorization: token }
+  const res = await fetch(API + "/admin/users",{
+    headers:{Authorization:token}
   });
 
-  const data = await res.json();
+  const d = await res.json();
 
-  if(!data.ok){
-    document.body.innerHTML = "无权限访问";
+  if(!d.ok){
+    document.body.innerHTML = "无权限或登录失效";
     return;
   }
 
-  document.getElementById("list").innerHTML =
-    data.users.map(u => `
-      <div class="card">
-        <div class="user">
-          <img src="${u.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed='+u.username}">
-          <div>
-            <b>${u.username}</b><br>
-            <small>${u.bio || '暂无简介'}</small>
-          </div>
-        </div>
-        <p>留言：${u.msg || '无'}</p>
+  list.innerHTML = d.users.map(u => `
+    <div class="card">
+      
+      <img class="avatar"
+        src="${u.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed='+u.username}">
+
+      <div class="info">
+        <div class="username">${u.username}</div>
+
+        <div class="small">简介：</div>
+        <div>${u.bio || "无"}</div>
+
+        <div class="small">留言：</div>
+        <div>${u.msg || "无"}</div>
       </div>
-    `).join("");
+
+    </div>
+  `).join("");
 }
 
 load();
+
+// ================= 退出 =================
+function logout(){
+  localStorage.clear();
+  location.href = "/";
+}
 </script>
 
 </body>
