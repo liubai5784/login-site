@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>登录系统 Pro</title>
+<title>后台管理系统 Pro Max</title>
 
 <style>
 body{
@@ -17,55 +17,72 @@ body{
 }
 
 .card{
-  width:320px;
+  width:380px;
   background:#fff;
-  padding:25px;
+  padding:20px;
   border-radius:15px;
   box-shadow:0 10px 30px rgba(0,0,0,0.2);
   text-align:center;
 }
 
-h2{
-  margin-bottom:20px;
-}
-
-input{
+input, button{
   width:100%;
   padding:10px;
-  margin:8px 0;
-  border:1px solid #ddd;
+  margin:6px 0;
   border-radius:8px;
-  outline:none;
+  border:1px solid #ddd;
 }
 
 button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border:none;
-  border-radius:8px;
   cursor:pointer;
-  font-size:16px;
+  border:none;
+  font-size:15px;
 }
 
-#loginBtn{
-  background:#4f8cff;
-  color:white;
+#loginBtn{background:#4f8cff;color:#fff;}
+#registerBtn{background:#6a5af9;color:#fff;}
+#logoutBtn{background:#ff4d4f;color:#fff;}
+#uploadBtn{background:#22c55e;color:#fff;}
+
+#msg{font-size:13px;margin-top:5px;}
+
+.avatar{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  overflow:hidden;
+  margin:10px auto;
+  background:#eee;
 }
 
-#registerBtn{
-  background:#6a5af9;
-  color:white;
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
-button:hover{
-  opacity:0.9;
+.admin{
+  color:red;
+  font-weight:bold;
 }
 
-#msg{
+.section{
+  display:none;
+}
+
+.table{
+  font-size:12px;
+  text-align:left;
+  max-height:150px;
+  overflow:auto;
+  border-top:1px solid #eee;
   margin-top:10px;
-  font-size:14px;
-  color:#333;
+}
+
+.userRow{
+  display:flex;
+  justify-content:space-between;
+  padding:4px 0;
 }
 
 </style>
@@ -74,107 +91,182 @@ button:hover{
 <body>
 
 <div class="card">
-  <h2>账号系统</h2>
 
+<h3>后台管理系统</h3>
+
+<!-- 登录区 -->
+<div id="loginBox">
   <input id="user" placeholder="用户名">
   <input id="pass" type="password" placeholder="密码">
-
   <button id="loginBtn">登录</button>
   <button id="registerBtn">注册</button>
-
   <div id="msg"></div>
+</div>
+
+<!-- 用户主页 -->
+<div id="homeBox" class="section">
+
+  <div class="avatar">
+    <img id="avatarImg">
+  </div>
+
+  <h3 id="usernameText"></h3>
+  <div id="adminTag" class="admin"></div>
+
+  <input type="file" id="avatarFile">
+  <button id="uploadBtn">上传头像</button>
+
+  <button id="logoutBtn">退出登录</button>
+
+  <!-- 管理员面板 -->
+  <div id="adminPanel" style="display:none;">
+    <h4>用户管理</h4>
+    <div id="userList" class="table"></div>
+  </div>
+
+</div>
+
 </div>
 
 <script>
 const API = "https://ceshi03.2750018830.workers.dev";
 
-// 绑定按钮
+const loginBox = document.getElementById("loginBox");
+const homeBox = document.getElementById("homeBox");
 const msg = document.getElementById("msg");
 
-document.getElementById("loginBtn").onclick = login;
-document.getElementById("registerBtn").onclick = register;
+let currentUser = null;
+
+// 绑定按钮
+loginBtn.onclick = login;
+registerBtn.onclick = register;
+logoutBtn.onclick = logout;
+uploadBtn.onclick = uploadAvatar;
 
 async function register(){
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const res = await fetch(API+"/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({user,pass})
+  });
 
-  if(!u || !p){
-    msg.innerText = "用户名或密码不能为空";
-    return;
-  }
-
-  try{
-    const res = await fetch(API + "/register", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({user:u,pass:p})
-    });
-
-    const data = await res.json();
-
-    if(data.ok){
-      msg.innerText = "注册成功 ✅";
-    }else{
-      msg.innerText = data.msg || "注册失败";
-    }
-
-  }catch(e){
-    msg.innerText = "网络错误";
-  }
+  const data = await res.json();
+  msg.innerText = data.ok ? "注册成功" : (data.msg||"失败");
 }
 
 async function login(){
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
 
-  if(!u || !p){
-    msg.innerText = "请输入用户名和密码";
-    return;
-  }
-
-  try{
-    const res = await fetch(API + "/login", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({user:u,pass:p})
-    });
-
-    const data = await res.json();
-
-    if(data.ok){
-      localStorage.setItem("token",data.token);
-      localStorage.setItem("user",data.user);
-
-      msg.innerText = "登录成功 🎉";
-
-      setTimeout(()=>{
-        document.body.innerHTML = `<h1 style='color:white'>欢迎回来：${data.user}</h1>`;
-      },800);
-
-    }else{
-      msg.innerText = "登录失败 ❌";
-    }
-
-  }catch(e){
-    msg.innerText = "网络错误";
-  }
-}
-
-// 自动登录
-window.onload = async ()=>{
-  const token = localStorage.getItem("token");
-  if(!token) return;
-
-  const res = await fetch(API+"/me",{
-    headers:{"Authorization":token}
+  const res = await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({user,pass})
   });
 
   const data = await res.json();
 
   if(data.ok){
-    document.body.innerHTML = `<h1 style='color:white'>欢迎回来：${data.user}</h1>`;
+    localStorage.setItem("token",data.token);
+    localStorage.setItem("user",data.user);
+    showHome(data.user);
+  }else{
+    msg.innerText = "登录失败";
+  }
+}
+
+function showHome(user){
+
+  currentUser = user;
+
+  loginBox.style.display="none";
+  homeBox.style.display="block";
+
+  usernameText.innerText = user;
+
+  avatarImg.src = "https://api.dicebear.com/7.x/identicon/svg?seed=" + user;
+
+  if(user === "admin"){
+    adminTag.innerText = "管理员账号";
+    adminPanel.style.display = "block";
+    loadUsers();
+  }
+}
+
+// 上传头像（base64 → 后端）
+async function uploadAvatar(){
+
+  const file = document.getElementById("avatarFile").files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(){
+
+    const base64 = reader.result;
+
+    const res = await fetch(API+"/avatar",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({token:localStorage.getItem("token"), avatar:base64})
+    });
+
+    const data = await res.json();
+
+    if(data.ok){
+      avatarImg.src = base64;
+      alert("头像更新成功");
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// 管理员：加载用户
+async function loadUsers(){
+
+  const res = await fetch(API+"/admin/users",{
+    headers:{Authorization:localStorage.getItem("token")}
+  });
+
+  const data = await res.json();
+
+  if(!data.ok) return;
+
+  userList.innerHTML = data.users.map(u=>`
+    <div class='userRow'>
+      <span>${u.username}</span>
+      <span>${u.password ? "***" : ""}</span>
+    </div>
+  `).join("");
+}
+
+function logout(){
+  localStorage.clear();
+  location.reload();
+}
+
+// 自动登录
+window.onload = async ()=>{
+
+  const token = localStorage.getItem("token");
+  const user = localStorage.getItem("user");
+
+  if(!token) return;
+
+  const res = await fetch(API+"/me",{
+    headers:{Authorization:token}
+  });
+
+  const data = await res.json();
+
+  if(data.ok){
+    showHome(data.user);
+  }else{
+    localStorage.clear();
   }
 };
 
