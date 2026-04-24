@@ -1,123 +1,188 @@
+
 const API = "https://ceshi03.2750018830.workers.dev";
 
-// 绑定按钮（只做一次）
-document.getElementById("loginBtn").onclick = login;
-document.getElementById("registerBtn").onclick = register;
-
+// ================= 注册 =================
 async function register(){
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
 
-  if(!u || !p){
-    alert("用户名和密码不能为空");
+  if(!user || !pass){
+    document.getElementById("msg").innerText = "用户名或密码不能为空";
     return;
   }
 
-  try{
-    const res = await fetch(API + "/register", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ user:u, pass:p })
-    });
+  const res = await fetch(API + "/register", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({user, pass})
+  });
 
-    const data = await res.json();
-    console.log(data);
+  const data = await res.json();
 
-    if(data.ok){
-      alert("注册成功");
-    } else {
-      alert(data.msg || "注册失败");
-    }
-
-  } catch(e){
-    console.log(e);
-    alert("请求失败");
+  if(data.ok){
+    document.getElementById("msg").innerText = "注册成功，可以登录";
+  }else{
+    document.getElementById("msg").innerText = data.msg || "注册失败";
   }
 }
 
+
+// ================= 登录 =================
 async function login(){
 
-  const u = document.getElementById("user").value.trim();
-  const p = document.getElementById("pass").value.trim();
+  const user = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value.trim();
 
-  if(!u || !p){
-    alert("用户名和密码不能为空");
+  const res = await fetch(API + "/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({user, pass})
+  });
+
+  const data = await res.json();
+
+  if(!data.ok){
+    document.getElementById("msg").innerText = "登录失败";
     return;
   }
 
-  try{
-    const res = await fetch(API + "/login", {
+  // 保存登录状态
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("user", data.user);
+
+  route(data.user);
+}
+
+
+// ================= 路由 =================
+function route(user){
+
+  document.getElementById("authBox").classList.add("hidden");
+
+  // admin进入后台页面
+  if(user === "admin"){
+    location.href = "/admin.html";
+    return;
+  }
+
+  // 普通用户
+  document.getElementById("userPage").classList.remove("hidden");
+
+  document.getElementById("name").innerText = user;
+
+  document.getElementById("avatar").src =
+    "https://api.dicebear.com/7.x/identicon/svg?seed=" + user;
+}
+
+
+// ================= 上传头像 =================
+async function uploadAvatar(){
+
+  const file = document.getElementById("avatarFile").files[0];
+  if(!file){
+    alert("请选择图片");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async () => {
+
+    const base64 = reader.result;
+
+    const res = await fetch(API + "/avatar", {
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ user:u, pass:p })
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        token: localStorage.getItem("token"),
+        avatar: base64
+      })
     });
 
     const data = await res.json();
-    console.log(data);
 
     if(data.ok){
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", data.user);
-
-      alert("登录成功");
-    } else {
-      alert("登录失败");
+      document.getElementById("avatar").src = base64;
+      alert("头像更新成功");
+    }else{
+      alert("上传失败");
     }
+  };
 
-  } catch(e){
-    console.log(e);
-    alert("请求失败");
-  }
+  reader.readAsDataURL(file);
 }
 
-function route(user){
 
-  // 先全部隐藏（关键！！）
-  document.getElementById("loginBox").classList.add("hidden");
-  document.getElementById("userApp").classList.add("hidden");
-  document.getElementById("adminApp").classList.add("hidden");
+// ================= 保存简介 =================
+async function saveBio(){
 
-  if(user === "admin"){
-    document.getElementById("adminApp").classList.remove("hidden");
-    loadUsers();
-  }else{
-    document.getElementById("userApp").classList.remove("hidden");
-    document.getElementById("uName").innerText = user;
-    document.getElementById("uAvatar").src =
-      "https://api.dicebear.com/7.x/identicon/svg?seed=" + user;
-  }
+  const bio = document.getElementById("bio").value;
+
+  const res = await fetch(API + "/bio", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      token: localStorage.getItem("token"),
+      bio
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.ok ? "保存成功" : "保存失败");
 }
 
-// 自动登录
+
+// ================= 留言 =================
+async function saveMsg(){
+
+  const msg = document.getElementById("msgToAuthor").value;
+
+  const res = await fetch(API + "/msg", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      token: localStorage.getItem("token"),
+      msg
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.ok ? "提交成功" : "提交失败");
+}
+
+
+// ================= 退出 =================
+function logout(){
+  localStorage.clear();
+  location.href = "/";
+}
+
+
+// ================= 自动登录 =================
 window.onload = async () => {
 
   const token = localStorage.getItem("token");
+  const user = localStorage.getItem("user");
 
-  // 1️⃣ 默认全部隐藏
-  document.getElementById("loginBox").classList.remove("hidden");
-  document.getElementById("userApp").classList.add("hidden");
-  document.getElementById("adminApp").classList.add("hidden");
-
-  // 没 token → 只显示登录页
-  if (!token) return;
-
-  try {
-    const res = await fetch(API + "/me", {
-      headers: { "Authorization": token }
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      localStorage.clear();
-      return;
-    }
-
-    route(data.user);
-
-  } catch (e) {
-    localStorage.clear();
+  if(!token || !user){
+    return;
   }
+
+  const res = await fetch(API + "/me", {
+    headers:{
+      Authorization: token
+    }
+  });
+
+  const data = await res.json();
+
+  if(!data.ok){
+    localStorage.clear();
+    return;
+  }
+
+  route(user);
 };
