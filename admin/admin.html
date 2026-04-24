@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台</title>
+
+<style>
+body{
+  margin:0;
+  font-family: Arial;
+  background:#0f172a;
+  color:#e2e8f0;
+}
+
+.header{
+  padding:20px;
+  background:#111827;
+}
+
+.container{
+  padding:20px;
+}
+
+.card{
+  background:#111827;
+  padding:16px;
+  margin-bottom:12px;
+  border-radius:12px;
+}
+
+.user{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+img{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>管理员后台</h2>
+</div>
+
+<div class="container" id="list">
+加载中...
+</div>
+
+<script>
+const API = "/api";
+
+// ❗简单权限检查（前端只做提示，真正权限在后端）
+const token = localStorage.getItem("token");
+
+if(!token){
+  location.href = "/";
+}
+
+async function load(){
+
+  const res = await fetch(API + "/admin/users", {
+    headers: { Authorization: token }
+  });
+
+  const data = await res.json();
+
+  if(!data.ok){
+    document.body.innerHTML = "无权限访问";
+    return;
+  }
+
+  document.getElementById("list").innerHTML =
+    data.users.map(u => `
+      <div class="card">
+        <div class="user">
+          <img src="${u.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed='+u.username}">
+          <div>
+            <b>${u.username}</b><br>
+            <small>${u.bio || '暂无简介'}</small>
+          </div>
+        </div>
+        <p>留言：${u.msg || '无'}</p>
+      </div>
+    `).join("");
+}
+
+load();
+</script>
+
+</body>
+</html>
