@@ -62,7 +62,21 @@ button{
   <h3 style="text-align:center;">想用的话你得先登录</h3>
 
   <input id="u" placeholder="君の名字">
-  <input id="p" type="password" placeholder="密码">
+  <div style="position:relative;">
+  <input id="p" type="password" placeholder="密码" style="padding-right:40px;">
+
+  <span onclick="togglePwd()" 
+        style="
+          position:absolute;
+          right:10px;
+          top:50%;
+          transform:translateY(-50%);
+          cursor:pointer;
+          user-select:none;
+        ">
+    👁️
+  </span>
+</div>
 
   <button class="login" onclick="login()">登录</button>
   <button class="register" onclick="register()">注册</button>
