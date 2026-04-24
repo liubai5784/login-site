@@ -38,3 +38,33 @@ button:hover {
   font-size: 16px;
   color: #333;
 }
+<style>
+  /* 你原来的样式 */
+
+  .pwd-box{
+    position:relative;
+  }
+
+  .pwd-box input{
+    width:100%;
+    padding:10px;
+    padding-right:60px;
+    border-radius:8px;
+    border:none;
+    background:#0b1220;
+    color:white;
+  }
+
+  #eyeBtn{
+    position:absolute;
+    right:6px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:transparent;
+    color:#93c5fd;
+    cursor:pointer;
+    font-size:12px;
+  }
+
+</style>
