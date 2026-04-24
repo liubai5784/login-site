@@ -100,6 +100,19 @@ input,button{
 <div id="userApp" class="hidden">
   <img id="uAvatar" class="avatar">
   <h2 id="uName"></h2>
+  <input type="file" id="avatarFile">
+
+<button onclick="uploadAvatar()" style="
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#22c55e;
+  color:white;
+  border:none;
+  border-radius:8px;
+">
+上传头像
+</button>
   <button class="danger" onclick="logout()">退出登录</button>
 </div>
 
