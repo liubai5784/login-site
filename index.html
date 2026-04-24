@@ -3,164 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>后台管理系统 Pro Max</title>
+<title>留白3.0</title>
 
 <style>
 body{
   margin:0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#4f8cff,#6a5af9);
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  font-family: Arial;
+  background:#0f172a;
+  color:#e2e8f0;
 }
 
-.card{
-  width:380px;
-  background:#fff;
+.hidden{display:none;}
+
+/* 登录 */
+#loginBox{
+  width:300px;
+  margin:100px auto;
+  background:#111827;
   padding:20px;
-  border-radius:15px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
-  text-align:center;
+  border-radius:10px;
 }
 
-input, button{
+input,button{
   width:100%;
   padding:10px;
   margin:6px 0;
   border-radius:8px;
-  border:1px solid #ddd;
-}
-
-button{
-  cursor:pointer;
   border:none;
-  font-size:15px;
 }
 
-#loginBtn{background:#4f8cff;color:#fff;}
-#registerBtn{background:#6a5af9;color:#fff;}
-#logoutBtn{background:#ff4d4f;color:#fff;}
-#uploadBtn{background:#22c55e;color:#fff;}
+.primary{background:#3b82f6;color:#fff;cursor:pointer;}
+.danger{background:#ef4444;color:#fff;cursor:pointer;}
 
-#msg{font-size:13px;margin-top:5px;}
+/* 用户端 */
+#userApp{
+  text-align:center;
+  padding:40px;
+}
 
 .avatar{
   width:80px;
   height:80px;
   border-radius:50%;
-  overflow:hidden;
-  margin:10px auto;
-  background:#eee;
 }
 
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+/* 后台 */
+#adminApp{
+  display:flex;
+  height:100vh;
 }
 
-.admin{
-  color:red;
-  font-weight:bold;
+.sidebar{
+  width:200px;
+  background:#111827;
+  padding:20px;
 }
 
-.section{
-  display:none;
+.main{
+  flex:1;
+  padding:20px;
+  overflow:auto;
 }
 
 .table{
-  font-size:12px;
-  text-align:left;
-  max-height:150px;
-  overflow:auto;
-  border-top:1px solid #eee;
-  margin-top:10px;
+  width:100%;
+  border-collapse:collapse;
 }
 
-.userRow{
-  display:flex;
-  justify-content:space-between;
-  padding:4px 0;
+.table th,.table td{
+  padding:10px;
+  border-bottom:1px solid #1f2937;
+  font-size:13px;
+}
+
+.avatar-sm{
+  width:30px;
+  height:30px;
+  border-radius:50%;
 }
 
 </style>
 </head>
-
 <body>
 
-<div class="card">
-
-<h3>后台管理系统</h3>
-
-<!-- 登录区 -->
+<!-- 登录 -->
 <div id="loginBox">
+  <h3>系统登录</h3>
   <input id="user" placeholder="用户名">
   <input id="pass" type="password" placeholder="密码">
-  <button id="loginBtn">登录</button>
-  <button id="registerBtn">注册</button>
+  <button class="primary" onclick="login()">登录</button>
+  <button onclick="register()">注册</button>
   <div id="msg"></div>
 </div>
 
-<!-- 用户主页 -->
-<div id="homeBox" class="section">
-
-  <div class="avatar">
-    <img id="avatarImg">
-  </div>
-
-  <h3 id="usernameText"></h3>
-  <div id="adminTag" class="admin"></div>
-
-  <input type="file" id="avatarFile">
-  <button id="uploadBtn">上传头像</button>
-
-  <button id="logoutBtn">退出登录</button>
-
-  <!-- 管理员面板 -->
-  <div id="adminPanel" style="display:none;">
-    <h4>用户管理</h4>
-    <div id="userList" class="table"></div>
-  </div>
-
+<!-- 用户端 -->
+<div id="userApp" class="hidden">
+  <img id="uAvatar" class="avatar">
+  <h2 id="uName"></h2>
+  <button class="danger" onclick="logout()">退出登录</button>
 </div>
+
+<!-- 管理后台 -->
+<div id="adminApp" class="hidden">
+
+  <div class="sidebar">
+    <h3>后台</h3>
+    <button onclick="loadUsers()">用户管理</button>
+    <button class="danger" onclick="logout()">退出</button>
+  </div>
+
+  <div class="main">
+    <h2>用户列表</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>头像</th>
+          <th>用户名</th>
+          <th>密码(哈希)</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
 
 </div>
 
 <script>
 const API = "https://ceshi03.2750018830.workers.dev";
 
-const loginBox = document.getElementById("loginBox");
-const homeBox = document.getElementById("homeBox");
-const msg = document.getElementById("msg");
-
-let currentUser = null;
-
-// 绑定按钮
-loginBtn.onclick = login;
-registerBtn.onclick = register;
-logoutBtn.onclick = logout;
-uploadBtn.onclick = uploadAvatar;
-
-async function register(){
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value.trim();
-
-  const res = await fetch(API+"/register",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({user,pass})
-  });
-
-  const data = await res.json();
-  msg.innerText = data.ok ? "注册成功" : (data.msg||"失败");
-}
-
 async function login(){
 
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value.trim();
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
 
   const res = await fetch(API+"/login",{
     method:"POST",
@@ -170,78 +144,52 @@ async function login(){
 
   const data = await res.json();
 
-  if(data.ok){
-    localStorage.setItem("token",data.token);
-    localStorage.setItem("user",data.user);
-    showHome(data.user);
-  }else{
-    msg.innerText = "登录失败";
+  if(!data.ok){
+    document.getElementById("msg").innerText="登录失败";
+    return;
   }
+
+  localStorage.setItem("token",data.token);
+  localStorage.setItem("user",data.user);
+
+  route(data.user);
 }
 
-function showHome(user){
+function route(user){
 
-  currentUser = user;
-
-  loginBox.style.display="none";
-  homeBox.style.display="block";
-
-  usernameText.innerText = user;
-
-  avatarImg.src = "https://api.dicebear.com/7.x/identicon/svg?seed=" + user;
+  document.getElementById("loginBox").classList.add("hidden");
 
   if(user === "admin"){
-    adminTag.innerText = "管理员账号";
-    adminPanel.style.display = "block";
+    document.getElementById("adminApp").classList.remove("hidden");
     loadUsers();
+  }else{
+    document.getElementById("userApp").classList.remove("hidden");
+    document.getElementById("uName").innerText = user;
+    document.getElementById("uAvatar").src = "https://api.dicebear.com/7.x/identicon/svg?seed="+user;
   }
 }
 
-// 上传头像（base64 → 后端）
-async function uploadAvatar(){
-
-  const file = document.getElementById("avatarFile").files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async function(){
-
-    const base64 = reader.result;
-
-    const res = await fetch(API+"/avatar",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({token:localStorage.getItem("token"), avatar:base64})
-    });
-
-    const data = await res.json();
-
-    if(data.ok){
-      avatarImg.src = base64;
-      alert("头像更新成功");
-    }
-  };
-
-  reader.readAsDataURL(file);
-}
-
-// 管理员：加载用户
 async function loadUsers(){
 
   const res = await fetch(API+"/admin/users",{
-    headers:{Authorization:localStorage.getItem("token")}
+    headers:{"Authorization":localStorage.getItem("token")}
   });
 
   const data = await res.json();
 
   if(!data.ok) return;
 
-  userList.innerHTML = data.users.map(u=>`
-    <div class='userRow'>
-      <span>${u.username}</span>
-      <span>${u.password ? "***" : ""}</span>
-    </div>
+  document.getElementById("userTable").innerHTML = data.users.map(u=>`
+    <tr>
+      <td><img class='avatar-sm' src='${u.avatar || "https://api.dicebear.com/7.x/identicon/svg?seed="+u.username}'></td>
+      <td>${u.username}</td>
+      <td>${u.password}</td>
+    </tr>
   `).join("");
+}
+
+function register(){
+  alert("调用注册接口即可（可自行补全）");
 }
 
 function logout(){
@@ -250,23 +198,12 @@ function logout(){
 }
 
 // 自动登录
-window.onload = async ()=>{
-
-  const token = localStorage.getItem("token");
+window.onload = ()=>{
   const user = localStorage.getItem("user");
+  const token = localStorage.getItem("token");
 
-  if(!token) return;
-
-  const res = await fetch(API+"/me",{
-    headers:{Authorization:token}
-  });
-
-  const data = await res.json();
-
-  if(data.ok){
-    showHome(data.user);
-  }else{
-    localStorage.clear();
+  if(user && token){
+    route(user);
   }
 };
 
