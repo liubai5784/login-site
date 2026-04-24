@@ -76,17 +76,30 @@ async function login(){
 window.onload = async () => {
 
   const token = localStorage.getItem("token");
-  if(!token) return;
 
-  const res = await fetch(API + "/me", {
-    headers: { "Authorization": token }
-  });
+  // 1️⃣ 默认全部隐藏
+  document.getElementById("loginBox").classList.remove("hidden");
+  document.getElementById("userApp").classList.add("hidden");
+  document.getElementById("adminApp").classList.add("hidden");
 
-  const data = await res.json();
+  // 没 token → 只显示登录页
+  if (!token) return;
 
-  if(data.ok){
-    document.body.innerHTML = "欢迎回来：" + data.user;
-  } else {
-    localStorage.removeItem("token");
+  try {
+    const res = await fetch(API + "/me", {
+      headers: { "Authorization": token }
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      localStorage.clear();
+      return;
+    }
+
+    route(data.user);
+
+  } catch (e) {
+    localStorage.clear();
   }
 };
