@@ -1,11 +1,13 @@
 const API = "https://ceshi03.2750018830.workers.dev";
 
+// 绑定按钮（只做一次）
+document.getElementById("loginBtn").onclick = login;
+document.getElementById("registerBtn").onclick = register;
+
 async function register(){
 
-  console.log("点击注册");
-
-  const u = document.getElementById("loginBtn").onclick = login;
-  const p = document.getElementById("registerBtn").onclick = register;
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
 
   if(!u || !p){
     alert("用户名和密码不能为空");
@@ -20,6 +22,7 @@ async function register(){
     });
 
     const data = await res.json();
+    console.log(data);
 
     if(data.ok){
       alert("注册成功");
@@ -28,15 +31,15 @@ async function register(){
     }
 
   } catch(e){
-    console.log("错误:", e);
+    console.log(e);
     alert("请求失败");
   }
 }
 
 async function login(){
 
-  const u = document.getElementById("loginBtn").onclick = login;
-  const p = document.getElementById("registerBtn").onclick = register;
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
 
   if(!u || !p){
     alert("用户名和密码不能为空");
@@ -51,6 +54,7 @@ async function login(){
     });
 
     const data = await res.json();
+    console.log(data);
 
     if(data.ok){
 
@@ -63,14 +67,15 @@ async function login(){
     }
 
   } catch(e){
-    console.log("错误:", e);
+    console.log(e);
     alert("请求失败");
   }
 }
+
+// 自动登录
 window.onload = async () => {
 
   const token = localStorage.getItem("token");
-
   if(!token) return;
 
   const res = await fetch(API + "/me", {
@@ -84,4 +89,4 @@ window.onload = async () => {
   } else {
     localStorage.removeItem("token");
   }
-}
+};
